@@ -71,6 +71,13 @@ if not exist ".\src\src\.env" (
     echo Файл .env уже существует.
 )
 
+pip install python-dotenv Pillow aiofiles aiosqlite nest-asyncio asyncio python-telegram-bot
+if %errorlevel% neq 0 (
+    echo Ошибка при установке библиотек.
+    pause
+    exit /b
+)
+
 call "%~dp0src\src\start.bat"
 call "%~dp0src\start.bat"
 

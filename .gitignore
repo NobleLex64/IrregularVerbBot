@@ -2,5 +2,4 @@
 /data/DataBase/*.db
 /data/Images/*.png
 /src/.env
-/src/data/BackgroundImage/*.png
 /src/src/.env
