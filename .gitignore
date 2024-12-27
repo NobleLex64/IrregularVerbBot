@@ -1,6 +1,6 @@
-/data/IrregularVerbCards/*
-/data/DataBase/*
-/data/Images/*
+/data/IrregularVerbCards/*.png
+/data/DataBase/*.db
+/data/Images/*.png
 /src/.env
-/src/data/BackgroundImage/*
+/src/data/BackgroundImage/*.png
 /src/src/.env
