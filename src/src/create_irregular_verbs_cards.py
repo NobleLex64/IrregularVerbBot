@@ -103,15 +103,19 @@ def main():
     print("\n------------------------------------------------\n")
     print("Начало работы: 'create_irregular_verbs_cards.py'\n\n")
 
-    delete_cards()
-    print("Карточки с неправильными глаголами были удаленны!\n\n")
+    ans = input("Вам нужно удалить существующие карточки? (Y/N): ")
+    if ans == "Y" or ans == "y":
+        delete_cards()
+        print("Карточки с неправильными глаголами были удаленны!\n\n")
 
     files = os.listdir(PATH_TO_IMG)
     if not files:
         raise ValueError(f"В папке {PATH_TO_IMG} не найдено изображений для фона.")
 
-    create_cards(files[0])
-    print("Карточки с неправильными глаголами были созданны!\n\n")
+    ans = input("Вам нужно создавать карточки? (Y/N): ")
+    if ans == "Y" or ans == "y":
+        create_cards(files[0])
+        print("Карточки с неправильными глаголами были созданны!\n\n")
 
     print("Завершение работы: 'create_irregular_verbs_cards.py'\n")
     print("------------------------------------------------\n")

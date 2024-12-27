@@ -9,7 +9,7 @@ import signal
 
 from dotenv       import load_dotenv
 from telegram     import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler, ContextTypes, CallbackContext
 from datetime     import datetime, timedelta
 
 ## NEED FOR WORK asyncio IN PYCHARM
@@ -156,14 +156,28 @@ async def search_present_simple(verb):
     return None 
 
 async def search_past_simple(verb):
-    return await srch1(verb)
+    async with aiosqlite.connect(DB_NAME) as conn:
+        cursor = await conn.execute("SELECT id, past_simple FROM verbs")
+        row  = await cursor.fetchall()
+
+        for id, verbs in row:
+            parts = verbs.split(" ") # parts[0] = verbs, parts[1] = transcriptions
+            part  = parts[0].split("/")
+            if part[0] == verb or (len(part) > 1 and part[1] == verb):
+                return id
+    return None
 
 async def search_past_participle(verb):
-    return await srch1(verb)
+    async with aiosqlite.connect(DB_NAME) as conn:
+        cursor = await conn.execute("SELECT id, past_participle FROM verbs")
+        row = await cursor.fetchall()
 
-async def search_translate(verb):
-    return await srch1(verb)
-
+        for id, verbs in row:
+            parts = verbs.split(" ")  # parts[0] = verbs, parts[1] = transcriptions
+            part = parts[0].split("/")
+            if part[0] == verb or (len(part) > 1 and part[1] == verb):
+                return id
+    return None
 ## END SEARCH
 
 
@@ -226,37 +240,26 @@ async def irregular_verbs(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Произошла ошибка: {e}")
 
 async def echo(update: Update, context: CallbackContext):
-    parts = update.message.text.split(" ", 1)
+    verb = update.message.text.lower()
 
-    if len(parts) < 2:
-        await update.message.reply_text("Пожалуйста, укажите глагол после команды!")
-        return
-
-    comm = parts[0].lower()
-    verb = parts[1].lower()
-
-    comm_version = {
-        "srch1": search_present_simple,
-        "srch2": search_past_simple,
-        "srch3": search_past_participle,
-        "srcht": search_translate
-    }
-
-    action = comm_version.get(comm)
-
-    if action:
-        verb_id = await action(verb)
+    functions = [
+        search_present_simple,
+        search_past_simple,
+        search_past_participle
+    ]
+    for function in functions:
+        verb_id = await function(verb)
         if verb_id:
             image_path = IMAGE_PATH + str(verb_id) + '.png'
             try:
-                img = await get_image(image_path)
+                img = get_image(image_path)
                 await update.message.reply_photo(photo=img)
+                return
             except Exception as e:
                 await update.message.reply_text(f"Не удалось загрузить изображение: {e}")
-        else:
-            await update.message.reply_text(f"Глагол {verb} не найден в базе данных.")
-    else:
-        await update.message.reply_text(f"Неизвестная команда {comm}. Пожалуйста, используйте одну из следующих команд: srch1, srch2, srch3, srcht.")
+                return
+
+    await update.message.reply_text(f"Глагол {verb} не найден в базе данных.")
 
 #
 ## END BOT COMMAND SEGMENT
@@ -427,7 +430,7 @@ async def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("irregular_verbs", irregular_verbs))
-    app.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
     app.add_handler(CallbackQueryHandler(button_handler))
 
     cleanup_task = asyncio.create_task(clean_up_sessions())

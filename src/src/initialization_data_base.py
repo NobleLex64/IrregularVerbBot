@@ -50,6 +50,7 @@ def main():
     print("\n------------------------------------------------\n")
     print("Начало работы: 'initialization_data_base.py'\n\n")
 
+    print(f"Путь к базе данных: {DB_PATH}")
     conn = sqlite3.connect(DB_PATH)
     init_db(conn)
     print("База данных была создана!\n")
