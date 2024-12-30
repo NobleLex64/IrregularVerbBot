@@ -44,6 +44,7 @@ if not exist ".\src\.env" (
     echo DB_NAME=../data/DataBase/EnLessonsBot.db
     echo VERBS_COUNT=256
     echo IMAGE_PATH=../data/IrregularVerbCarts/
+    echo VERB_ON_PAGE=15
     ) > ".\src\.env"
     echo Файл .env создан в ".\src\".
 ) else (
@@ -57,14 +58,24 @@ if not exist ".\src\src\.env" (
     echo SQL_GET=../../data/sqlite_verbs.txt
     echo IRREGULAR_VERB_CARDS_PATH=../../data/IrregularVerbCarts/
     echo BACKGROUND_IMG_PATH=../data/BackgroundImage/
-    echo WIDTH=800
-    echo HEIGHT=450
-    echo HEX_BACKGROUND_RGB=0xE4EEFB
-    echo ALPHA=200
-    echo HEX_TEXT_RGB=0xDC140C
-    echo HEX_LAST_WORD_RGB=0x228B22
+	
+    echo VERB_ON_PAGE=15
+
+    echo VERB_TEXT_COLOR=0xDC140C
+    echo VERB_TRANSLATION_COLOR=0x228B22
     echo FONT=arial.ttf
-    echo TEXT_SIZE=40
+
+    echo CARTS_WIDTH=800
+    echo CARTS_HEIGHT=450
+    echo CARTS_BACKGROUND_COLOR=0xFFFFFFE0
+    echo CARTS_TEXT_SIZE=40
+
+    echo TABLE_WIDTH=1600
+    echo TABLE_HEIGHT=900
+    echo TABLE_BACKGROUND_COLOR=0xFFFFFF00
+    echo TABLE_HEADER_TEXT_COLOR=0x4040FF
+    echo TABLE_HEADER_TEXT_SIZE=30
+    echo TABLE_TEXT_SIZE=25
     ) > ".\src\src\.env"
     echo Файл .env создан в ".\src\src\".
 ) else (
