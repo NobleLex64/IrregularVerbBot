@@ -1,6 +1,5 @@
 import sqlite3
 import os
-from operator import index
 
 from PIL    import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv

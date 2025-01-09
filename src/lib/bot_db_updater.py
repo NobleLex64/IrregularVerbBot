@@ -1,5 +1,6 @@
 import aiosqlite
 
+from datetime import datetime
 from globals           import DB_NAME, VERBS_COUNT
 from lib.bot_functions import set_bit
 
@@ -12,13 +13,21 @@ async def add_user_in_db(user_id, username):
         row    = await cursor.fetchone()
         if not row :
             await conn.execute('''
-                        INSERT INTO users (id, username, progress)
-                        VALUES (?, ?, ?)
-                    ''', (user_id, username, bytearray(VERBS_COUNT // 8)))
+                        INSERT INTO users (id, access, username, progress, data_last_update)
+                        VALUES (?, ?, ?, ?, ?)
+                    ''', (
+                        user_id,
+                        "new",
+                        username, bytearray(VERBS_COUNT // 8),
+                        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    )
+            )
             await conn.commit()
-            print(f"Добавлен новый пользователь в таблицу users: {user_id}, {username}")
         else:
-            print(f"Пользователь: {username} уже есть в таблице users!")
+            async with aiosqlite.connect(DB_NAME) as conn:
+                await conn.execute("UPDATE users SET data_last_update = ? WHERE id = ?",
+                                   (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id))
+                await conn.commit()
 
 # Update user progress -> void
 async def upd_usr_progress(user_id, verbs_id):

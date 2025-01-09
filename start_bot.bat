@@ -37,14 +37,21 @@ if "%BOT_TOKEN%"=="" (
     echo BOT_TOKEN не может быть пустым. Попробуйте снова.
     goto input_loop
 )
+echo Введите значение для CHANNEL_USERNAME:
+set /p CHANNEL=
+if "%CHANNEL%"=="" (
+    echo CHANNEL_USERNAME не может быть пустым. Попробуйте снова.
+    goto input_loop
+)
 
 if not exist ".\src\.env" (
     (
     echo BOT_TOKEN=%BOT_TOKEN%
     echo DB_NAME=../data/DataBase/EnLessonsBot.db
-    echo VERBS_COUNT=256
+    echo VERBS_COUNT=160
     echo IMAGE_PATH=../data/IrregularVerbCarts/
     echo VERB_ON_PAGE=15
+    echo CHANNEL_USERNAME=%CHANNEL%
     ) > ".\src\.env"
     echo Файл .env создан в ".\src\".
 ) else (

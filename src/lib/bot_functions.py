@@ -1,5 +1,3 @@
-from globals import VERBS_COUNT
-
 ## Function for help
 # Put a bit on index -> void
 def set_bit(progress, index):
@@ -16,7 +14,7 @@ def is_bit_set(progress, index):
 # Get first 5 not learned verb index -> int
 def find_next_unlearned(progress, size):
     indexes = []
-    for i in range(0, VERBS_COUNT):
+    for i in range(0, len(progress) * 8):
         if not is_bit_set(progress, i):
             indexes.append(i + 1)
             if len(indexes) == size:

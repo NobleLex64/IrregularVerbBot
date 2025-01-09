@@ -1,21 +1,26 @@
 import aiosqlite
 
-from globals                 import DB_NAME, IMAGE_PATH, VERBS_COUNT, VERBS_ON_PAGE
-from lib.bot_search_handler  import search_present_simple, search_past_simple, search_past_participle
-from lib.bot_db_updater      import add_user_in_db
-from lib.bot_functions       import find_next_unlearned, is_bit_set
-from lib.bot_image_manager   import get_image
-from lib.bot_session_manager import is_session_active, start_user_session
+from globals                     import DB_NAME, IMAGE_PATH, VERBS_COUNT, VERBS_ON_PAGE, USER_SESSION
+from lib.bot_search_handler      import search_present_simple, search_past_simple, search_past_participle
+from lib.bot_db_updater          import add_user_in_db
+from lib.bot_functions           import find_next_unlearned, is_bit_set
+from lib.bot_image_manager       import get_image
+from lib.bot_session_manager     import is_session_active, start_user_session
+from lib.bot_check_subscriptions import check_subscriptions, not_subscriptions
 
-from telegram                import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
-from telegram.ext            import ApplicationBuilder, ContextTypes, CallbackContext
+from telegram                    import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
+from telegram.ext                import ApplicationBuilder, ContextTypes, CallbackContext
 
 # Command: /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message :
         await update.callback_query.answer()
 
-    text = f"Привет {update.effective_user.username}! Я бот для помощи с изучением английского языка."
+    if not await check_subscriptions(update, context):
+        await not_subscriptions(update, context)
+        return
+
+    text = f"Привет {update.effective_user.username}! Я бот для изучения неправильных глаголов."
 
     keyboard = [
         [InlineKeyboardButton("❓  Помощь", callback_data="help_command")],
@@ -35,6 +40,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Command: /help
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
+
     text = ''' 
         Привет! Я расскажу тебе, что я могу сделать.. 
 
@@ -46,18 +52,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         - это кнопка поможет тебе выучить неправильные глаголы.
         - в общем предоставляет тебе 7 карточек с неправильными глаголами.
         - переключайся между карточками с помощью кнопок <<Prev>> <<Next>>.
-        - когда выучищь все 7 карточек жми кнопку <<Learned!>>
+        - когда выучишь все 7 карточек жми кнопку <<Learned!>>
+        - пройди тест, и я запомню глаголы которые ты выучил.
         - карточки которые ты выучил добавятся в твой прогресс и больше тебе не попадутся!
 
     '🔣 Таблица неправильных глаголов'
         - это кнопка покажет тебе всю таблицу неправильных глаголов.
         - она содержит более 200 неправильных глаголов!
         - переключайся между страницами с помощью кнопок <<Prev>> <<Next>>.
-        - когда закончишь просматривать таблицу жми <<Learned!>>.
+        - когда закончишь просматривать таблицу жми <<Menu>>.
 
     '📈  Прогресс'
-        - эта команда покажет как много ты успел изучить и мколько еще осталось глаголов.
-        - также она покажет в какие дни и сколько глаголов ты выучил!
+        - эта команда покажет как много глаголов ты успел изучить и сколько еще осталось выучить.
+        - также можно сбросить весь прогресс
         
     p.s.
         Попробуй написать в чат неправильный глагол...
@@ -73,6 +80,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Command: /progress
 async def progress_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
+
     user_id   = update.effective_user.id
     user_name = update.effective_user.username
     await add_user_in_db(user_id, user_name)
@@ -83,13 +91,14 @@ async def progress_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         row      = await cursor.fetchone()
         progress = bytearray(row[0])
 
-        for i in range(0, VERBS_COUNT):
+        for i in range(0, len(progress)):
             if is_bit_set(progress, i):
                 count += 1
 
-    text = f"Your progress: {count}/200"
+    text = f"Your progress: {count}/{len(progress) * 8}"
     keyboard = [
-        [InlineKeyboardButton("⬅️ Back", callback_data="start")]
+        [InlineKeyboardButton("⬅️ Back", callback_data="start")],
+        [InlineKeyboardButton("❌ Delete progress?", callback_data="ask_delete_progress")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -102,9 +111,10 @@ async def irregular_verbs(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if is_session_active(update.effective_user.id):
         keyboard = [
-            [InlineKeyboardButton("⬅️ Back", callback_data="start")]
+            [InlineKeyboardButton("⬅️ Back", callback_data="start")],
+            [InlineKeyboardButton("🆑 Restart", callback_data="restart")]
         ]
-        text = "Команда уже активна. Завершите текущую сессию, чтобы начать новую."
+        text = "Сессия уже активна. Завершите текущую сессию, или начните новую (🆑 Restart)."
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = await update.callback_query.message.reply_text(text, reply_markup=reply_markup)
         await update.callback_query.message.delete()
@@ -129,9 +139,8 @@ async def irregular_verbs(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
 
         keyboard = [
-            [
-                InlineKeyboardButton("Приступить к выполнению", callback_data="ok"),
-            ]
+            [InlineKeyboardButton("🎫 Приступить к выполнению", callback_data="ok")],
+            [InlineKeyboardButton("⬅️ Back", callback_data="restart")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -147,13 +156,8 @@ async def irregular_verbs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         print(f"Ошибка: {e}")
         await update.callback_query.message.reply_text("Произошла ошибка при обработке команды.")
-
-
     except aiosqlite.Error as db_error:
         message = await update.callback_query.message.reply_text(f"Ошибка базы данных: {db_error}")
-        await update.callback_query.message.delete()
-    except Exception as e:
-        message = await update.callback_query.message.reply_text(f"Произошла ошибка: {e}")
         await update.callback_query.message.delete()
 
 # Command: /table
@@ -162,9 +166,10 @@ async def irregular_verbs_table(update: Update, context: ContextTypes.DEFAULT_TY
 
     if is_session_active(update.effective_user.id):
         keyboard = [
-            [InlineKeyboardButton("⬅️ Back", callback_data="start")]
+            [InlineKeyboardButton("⬅️ Back", callback_data="start")],
+            [InlineKeyboardButton("🆑 Restart", callback_data="restart")]
         ]
-        text = "Команда уже активна. Завершите текущую сессию, чтобы начать новую."
+        text = "Сессия уже активна. Завершите текущую сессию, или начните новую (Restart)."
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = await update.callback_query.message.reply_text(text, reply_markup=reply_markup)
         await update.callback_query.message.delete()
@@ -188,9 +193,8 @@ async def irregular_verbs_table(update: Update, context: ContextTypes.DEFAULT_TY
             indexes.append(f"table_{i}")
 
         keyboard = [
-            [
-                InlineKeyboardButton("Получить?", callback_data="ok"),
-            ]
+            [InlineKeyboardButton("Получить", callback_data="ok")],
+            [InlineKeyboardButton("⬅️ Back", callback_data="restart")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -204,6 +208,34 @@ async def irregular_verbs_table(update: Update, context: ContextTypes.DEFAULT_TY
     except Exception as e:
         print(f"Ошибка: {e}")
         await update.callback_query.message.reply_text("Произошла ошибка при обработке команды.")
+
+async def restart_session(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.callback_query.answer()
+
+    if is_session_active(update.effective_user.id):
+        del USER_SESSION[update.effective_user.id]
+
+    await start(update, context)
+
+async def ask_delete_progress(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.callback_query.answer()
+    text = f"Вы точно хотите удались весь ваш прогресс?"
+    keyboard = [
+        [InlineKeyboardButton("⬅️ Back", callback_data="progress")],
+        [InlineKeyboardButton("❌ Delete", callback_data="delete_progress")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    message = await update.callback_query.message.reply_text(text, reply_markup=reply_markup)
+    await update.callback_query.message.delete()
+
+async def delete_progress(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    async with aiosqlite.connect(DB_NAME) as conn:
+        await conn.execute("UPDATE users SET progress = ? WHERE id = ?", (bytearray(VERBS_COUNT // 8), user_id))
+        await conn.commit()
+
+    await progress_command(update, context)
 
 async def echo(update: Update, context: CallbackContext):
     verb = update.message.text.lower()

@@ -14,11 +14,12 @@ if errorlevel 1 (
 )
 
 :: Запуск второго скрипта
-python "create_irregular_verbs_cards.py"
+python "create_irregular_verbs_carts.py"
 if errorlevel 1 (
-    echo Ошибка при выполнении create_irregular_verbs_cards.py
+    echo Ошибка при выполнении create_irregular_verbs_carts.py
     pause
     exit /b 1
 )
+
 
 exit /b

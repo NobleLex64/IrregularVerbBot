@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Load data from .env
 load_dotenv()
@@ -18,8 +19,10 @@ def init_db(conn):
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id        INTEGER PRIMARY KEY,
+            access    TEXT,
             username  TEXT,  
-            progress  BLOB         
+            progress  BLOB,
+            data_last_update TEXT      
         )
     ''')
     cursor.execute('''
@@ -45,6 +48,31 @@ def filling_verbs_table(conn):
         cursor = conn.cursor()
         cursor.executescript(content)
         conn.commit()
+
+def month_count(time, now_time):
+    years = int(now_time[0:4]) - int(time[0:4])
+    months = int(now_time[5:7]) - int(time[5:7])
+    months += years * 12
+    return months
+
+async def delete_users_from_table(conn):
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, data_last_update FROM users")
+    users = cursor.fetchall()
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    to_delete = []
+
+    for user in users:
+        time = user[1]
+        if time is not None and month_count(time, now) >= 6:
+            to_delete.append(user[0])
+
+    if to_delete:
+        placeholders = ",".join("?" for _ in to_delete)
+        await conn.execute(f"DELETE FROM users WHERE id IN ({placeholders})", to_delete)
+        await conn.commit()
+
 
 def main():
     print("\n------------------------------------------------\n")

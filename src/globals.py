@@ -9,8 +9,9 @@ DB_NAME         = os.getenv("DB_NAME")
 IMAGE_PATH      = os.getenv("IMAGE_PATH")
 VERBS_COUNT     = int(os.getenv("VERBS_COUNT"))
 VERBS_ON_PAGE   = int(os.getenv("VERB_ON_PAGE"))
+CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME")
 USER_SESSION    = {}
-image_cache     = {}
+IMAGES_CASH     = {}
 SESSION_TIMEOUT = timedelta(minutes=10)
 TTL             = 86400  # 24 часа
 VERBS_WORK      = False
@@ -29,3 +30,6 @@ if not VERBS_COUNT:
 
 if not VERBS_ON_PAGE:
     raise ValueError("VERBS_ON_PAGE не найден! Убедитесь, что файл .env существует и содержит VERB_ON_PAGE.")
+
+if not CHANNEL_USERNAME:
+    raise ValueError("CHANNEL_USERNAME не найден! Убедитесь, что файл .env существует и содержит CHANNEL_USERNAME.")
