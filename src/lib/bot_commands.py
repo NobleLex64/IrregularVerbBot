@@ -1,6 +1,6 @@
 import aiosqlite
 
-from globals                     import DB_NAME, IMAGE_PATH, VERBS_COUNT, VERBS_ON_PAGE, USER_SESSION
+from globals                     import DB_NAME, IMAGE_PATH, VERBS_COUNT, VERBS_ON_PAGE, USER_SESSION, TEXT_LIST
 from lib.bot_search_handler      import search_present_simple, search_past_simple, search_past_participle
 from lib.bot_db_updater          import add_user_in_db
 from lib.bot_functions           import find_next_unlearned, is_bit_set
@@ -20,13 +20,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await not_subscriptions(update, context)
         return
 
-    text = f"Привет {update.effective_user.username}! Я бот для изучения неправильных глаголов."
+    text = TEXT_LIST[0]
 
     keyboard = [
-        [InlineKeyboardButton("❓  Помощь", callback_data="help_command")],
-        [InlineKeyboardButton("📔  Учить неправильные глаголы", callback_data="irregular_verbs")],
-        [InlineKeyboardButton("🔣  Таблица неправильных глаголов", callback_data="table")],
-        [InlineKeyboardButton("📈  Прогресс", callback_data="progress")],
+        [InlineKeyboardButton(TEXT_LIST[9], callback_data="help_command")],
+        [InlineKeyboardButton(TEXT_LIST[10], callback_data="irregular_verbs")],
+        [InlineKeyboardButton(TEXT_LIST[11], callback_data="table")],
+        [InlineKeyboardButton(TEXT_LIST[12], callback_data="progress")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -41,36 +41,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
 
-    text = ''' 
-        Привет! Я расскажу тебе, что я могу сделать.. 
-
-
-    '⬅️ Back'
-        - эта кнопка вернёт тебя на предыдущую старницу.
-
-    '📔 Учить неправильные глаголы'
-        - это кнопка поможет тебе выучить неправильные глаголы.
-        - в общем предоставляет тебе 7 карточек с неправильными глаголами.
-        - переключайся между карточками с помощью кнопок <<Prev>> <<Next>>.
-        - когда выучишь все 7 карточек жми кнопку <<Learned!>>
-        - пройди тест, и я запомню глаголы которые ты выучил.
-        - карточки которые ты выучил добавятся в твой прогресс и больше тебе не попадутся!
-
-    '🔣 Таблица неправильных глаголов'
-        - это кнопка покажет тебе всю таблицу неправильных глаголов.
-        - она содержит более 200 неправильных глаголов!
-        - переключайся между страницами с помощью кнопок <<Prev>> <<Next>>.
-        - когда закончишь просматривать таблицу жми <<Menu>>.
-
-    '📈  Прогресс'
-        - эта команда покажет как много глаголов ты успел изучить и сколько еще осталось выучить.
-        - также можно сбросить весь прогресс
-        
-    p.s.
-        Попробуй написать в чат неправильный глагол...
-    '''
+    text = TEXT_LIST[1]
     keyboard = [
-        [InlineKeyboardButton("⬅️ Back", callback_data="start")]
+        [InlineKeyboardButton(TEXT_LIST[13], callback_data="start")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -95,10 +68,10 @@ async def progress_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if is_bit_set(progress, i):
                 count += 1
 
-    text = f"Your progress: {count}/{len(progress) * 8}"
+    text = TEXT_LIST[4] + f"{count}/{len(progress) * 8}"
     keyboard = [
-        [InlineKeyboardButton("⬅️ Back", callback_data="start")],
-        [InlineKeyboardButton("❌ Delete progress?", callback_data="ask_delete_progress")]
+        [InlineKeyboardButton(TEXT_LIST[13], callback_data="start")],
+        [InlineKeyboardButton(TEXT_LIST[15], callback_data="ask_delete_progress")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -111,10 +84,10 @@ async def irregular_verbs(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if is_session_active(update.effective_user.id):
         keyboard = [
-            [InlineKeyboardButton("⬅️ Back", callback_data="start")],
-            [InlineKeyboardButton("🆑 Restart", callback_data="restart")]
+            [InlineKeyboardButton(TEXT_LIST[13], callback_data="start")],
+            [InlineKeyboardButton(TEXT_LIST[16], callback_data="restart")]
         ]
-        text = "Сессия уже активна. Завершите текущую сессию, или начните новую (🆑 Restart)."
+        text = TEXT_LIST[6]
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = await update.callback_query.message.reply_text(text, reply_markup=reply_markup)
         await update.callback_query.message.delete()
@@ -139,13 +112,13 @@ async def irregular_verbs(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
 
         keyboard = [
-            [InlineKeyboardButton("🎫 Приступить к выполнению", callback_data="ok")],
-            [InlineKeyboardButton("⬅️ Back", callback_data="restart")]
+            [InlineKeyboardButton(TEXT_LIST[17], callback_data="ok")],
+            [InlineKeyboardButton(TEXT_LIST[13], callback_data="restart")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         message = await update.callback_query.message.reply_text(
-            "Вы готовы начать изучение следующего набора глаголов?",
+            TEXT_LIST[2],
             reply_markup=reply_markup
         )
 
@@ -166,10 +139,10 @@ async def irregular_verbs_table(update: Update, context: ContextTypes.DEFAULT_TY
 
     if is_session_active(update.effective_user.id):
         keyboard = [
-            [InlineKeyboardButton("⬅️ Back", callback_data="start")],
-            [InlineKeyboardButton("🆑 Restart", callback_data="restart")]
+            [InlineKeyboardButton(TEXT_LIST[13], callback_data="start")],
+            [InlineKeyboardButton(TEXT_LIST[14], callback_data="restart")]
         ]
-        text = "Сессия уже активна. Завершите текущую сессию, или начните новую (Restart)."
+        text = TEXT_LIST[6]
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = await update.callback_query.message.reply_text(text, reply_markup=reply_markup)
         await update.callback_query.message.delete()
@@ -193,13 +166,13 @@ async def irregular_verbs_table(update: Update, context: ContextTypes.DEFAULT_TY
             indexes.append(f"table_{i}")
 
         keyboard = [
-            [InlineKeyboardButton("Получить", callback_data="ok")],
-            [InlineKeyboardButton("⬅️ Back", callback_data="restart")],
+            [InlineKeyboardButton(TEXT_LIST[18], callback_data="ok")],
+            [InlineKeyboardButton(TEXT_LIST[13], callback_data="restart")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         message = await update.callback_query.message.reply_text(
-            "Хотите получить таблицу неправильных глаголов?",
+            TEXT_LIST[3],
             reply_markup=reply_markup
         )
         start_user_session(user_id, indexes, message.message_id)
@@ -219,10 +192,10 @@ async def restart_session(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def ask_delete_progress(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
-    text = f"Вы точно хотите удались весь ваш прогресс?"
+    text = TEXT_LIST[5]
     keyboard = [
-        [InlineKeyboardButton("⬅️ Back", callback_data="progress")],
-        [InlineKeyboardButton("❌ Delete", callback_data="delete_progress")]
+        [InlineKeyboardButton(TEXT_LIST[13], callback_data="progress")],
+        [InlineKeyboardButton(TEXT_LIST[14], callback_data="delete_progress")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -252,7 +225,7 @@ async def echo(update: Update, context: CallbackContext):
             try:
                 img = get_image(image_path)
                 keyboard = [
-                    [InlineKeyboardButton("⬅️ Back", callback_data="start")]
+                    [InlineKeyboardButton(TEXT_LIST[13], callback_data="start")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 message = await update.message.reply_photo(photo=img, reply_markup=reply_markup)

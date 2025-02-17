@@ -3,3 +3,5 @@
 /data/Images/*.png
 /src/.env
 /src/src/.env
+/src/__*
+/__*

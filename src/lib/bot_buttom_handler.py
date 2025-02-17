@@ -6,7 +6,7 @@ from lib.bot_check_subscriptions import check_subscriptions, not_subscriptions
 from lib.bot_commands            import help_command, irregular_verbs, start, progress_command, irregular_verbs_table, restart_session, ask_delete_progress, delete_progress
 from lib.bot_image_manager       import get_image
 from lib.bot_session_manager     import is_session_active
-from globals                     import USER_SESSION, IMAGE_PATH
+from globals                     import USER_SESSION, IMAGE_PATH, TEXT_LIST
 
 
 async def send_button_interface(update, context, verb_id, keyboard, user_dict, prev_message_id):
@@ -36,7 +36,8 @@ async def button_ok(update, context: ContextTypes.DEFAULT_TYPE):
     prev_message_id = user_dict.get("message_id")
     keyboard = [
         [
-            InlineKeyboardButton("Next", callback_data="next")
+            InlineKeyboardButton(TEXT_LIST[13], callback_data="restart"),
+            InlineKeyboardButton(TEXT_LIST[19], callback_data="next")
         ]
     ]
 
@@ -53,18 +54,21 @@ async def button_next(update, context: ContextTypes.DEFAULT_TYPE):
     if i != (len(verbs_id) - 1):
         keyboard = [
             [
-                InlineKeyboardButton("Prev", callback_data="prev"),
-                InlineKeyboardButton("Next", callback_data="next"),
+                InlineKeyboardButton(TEXT_LIST[20], callback_data="prev"),
+                InlineKeyboardButton(TEXT_LIST[19], callback_data="next"),
+            ],
+            [
+                InlineKeyboardButton(TEXT_LIST[13], callback_data="restart"),
             ]
         ]
     else:
         type_id = 0
-        text = [ ["Start test", "test"], ["Menu", "restart"] ]
+        text = [ [TEXT_LIST[22], "test"], [TEXT_LIST[21], "restart"] ]
         if not str(verbs_id[0]).isdigit():
             type_id = 1
         keyboard = [
             [
-                InlineKeyboardButton("Prev", callback_data="prev"),
+                InlineKeyboardButton(TEXT_LIST[20], callback_data="prev"),
                 InlineKeyboardButton(text[type_id][0], callback_data=text[type_id][1]),
             ]
         ]
@@ -81,14 +85,18 @@ async def button_prev(update, context: ContextTypes.DEFAULT_TYPE):
     if i != 0:
         keyboard = [
             [
-                InlineKeyboardButton("Prev", callback_data="prev"),
-                InlineKeyboardButton("Next", callback_data="next"),
+                InlineKeyboardButton(TEXT_LIST[20], callback_data="prev"),
+                InlineKeyboardButton(TEXT_LIST[19], callback_data="next"),
+            ],
+            [
+                InlineKeyboardButton(TEXT_LIST[13], callback_data="restart"),
             ]
         ]
     else:
         keyboard = [
             [
-                InlineKeyboardButton("Next", callback_data="next")
+                InlineKeyboardButton(TEXT_LIST[13], callback_data="restart"),
+                InlineKeyboardButton(TEXT_LIST[19], callback_data="next")
             ]
         ]
 
@@ -149,9 +157,9 @@ async def button_handler(update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user_id                = update.effective_user.id
         if button_actions.get(qdata) and not is_session_active(user_id):
-            keyboard = [[InlineKeyboardButton("Меню", callback_data="start")]]
+            keyboard = [[InlineKeyboardButton(TEXT_LIST[21], callback_data="start")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
-            text = "Ваша сессия истекла. Начните новую!"
+            text = TEXT_LIST[7]
             message = await query.message.reply_text(text, reply_markup=reply_markup)
             await query.message.delete()
             return
