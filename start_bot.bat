@@ -96,7 +96,7 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
-call "%~dp0src\src\start.bat"
+call "%~dp0src\src\create_carts.bat"
 call "%~dp0src\start.bat"
 
 
