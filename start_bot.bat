@@ -49,6 +49,7 @@ if not exist ".\src\.env" (
     echo BOT_TOKEN=%BOT_TOKEN%
     echo DB_NAME=../data/DataBase/EnLessonsBot.db
     echo VERBS_COUNT=160
+    echo TEXT_PATH=./data/text_data.txt	
     echo IMAGE_PATH=../data/IrregularVerbCarts/
     echo VERB_ON_PAGE=15
     echo CHANNEL_USERNAME=%CHANNEL%

@@ -1,15 +1,12 @@
-@echo off
-chcp 65001
-cd /d "%~dp0"
+#!/bin/bash
 
-:: Запуск Python-скриптов по очереди
-echo Запуск скриптов по созданию бота...
+set -e  # Прекратить выполнение при ошибке
 
-python main.py
-if errorlevel 1 (
-    echo Ошибка при выполнении main.py
-    pause
-    exit /b 1
-)
+cd "$(dirname "$0")"
 
-exit /b
+echo "Запуск бота...\n"
+
+if ! python3 "main.py"; then
+    echo "Ошибка при выполнении main.py"
+    exit 1
+fi

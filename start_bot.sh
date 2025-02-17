@@ -35,6 +35,7 @@ if [ ! -f "$env_file" ]; then
 BOT_TOKEN=$BOT_TOKEN
 DB_NAME=../data/DataBase/EnLessonsBot.db
 VERBS_COUNT=160
+TEXT_PATH=./data/bot_text.txt
 IMAGE_PATH=../data/IrregularVerbCarts/
 VERB_ON_PAGE=15
 CHANNEL_USERNAME=$CHANNEL
@@ -81,6 +82,9 @@ if [ $? -ne 0 ]; then
     echo "Ошибка при установке библиотек."
     exit 1
 fi
+
+echo "Установка прав на выполнение .sh файлов..."
+chmod +x src/src/create_carts.sh src/start.sh
 
 # Запуск create_carts.sh
 if ! bash "src/src/create_carts.sh"; then
