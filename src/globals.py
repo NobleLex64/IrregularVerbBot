@@ -17,6 +17,7 @@ IMAGES_CASH     = {}
 SESSION_TIMEOUT = timedelta(minutes=10)
 TTL             = 86400  # 24 часа
 VERBS_WORK      = False
+ADMIN_ID        = os.getenv("ADMIN_ID", 0)
 
 if not TEXT_PATH:
     raise ValueError("Путь к файду не найден! Убедитесь, что файл .env существует и содержит TEXT_PATH.")

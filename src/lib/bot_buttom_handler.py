@@ -3,7 +3,7 @@ from telegram.ext                import ApplicationBuilder, CommandHandler, Mess
 
 from lib.bot_verbs_test          import test, correct_quiz, incorrect_quiz
 from lib.bot_check_subscriptions import check_subscriptions, not_subscriptions
-from lib.bot_commands            import help_command, irregular_verbs, start, progress_command, irregular_verbs_table, restart_session, ask_delete_progress, delete_progress
+from lib.bot_commands            import help_command, irregular_verbs, start, progress_command, irregular_verbs_table, restart_session, ask_delete_progress, delete_progress, students_progress
 from lib.bot_image_manager       import get_image
 from lib.bot_session_manager     import is_session_active
 from globals                     import USER_SESSION, IMAGE_PATH, TEXT_LIST
@@ -151,7 +151,8 @@ async def button_handler(update, context: ContextTypes.DEFAULT_TYPE):
         "table": irregular_verbs_table,
         "restart": restart_session,
         "ask_delete_progress": ask_delete_progress,
-        "delete_progress": delete_progress
+        "delete_progress": delete_progress,
+        "stud_progress": students_progress
     }
 
     try:

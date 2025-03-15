@@ -37,22 +37,21 @@ if "%BOT_TOKEN%"=="" (
     echo BOT_TOKEN не может быть пустым. Попробуйте снова.
     goto input_loop
 )
-echo Введите значение для CHANNEL_USERNAME:
+echo Введите значение для каналов на которые нужно подписаться:
+echo например:@channel_1,@channel_2,...
+echo CHANNEL_USERNAMES:
 set /p CHANNEL=
-if "%CHANNEL%"=="" (
-    echo CHANNEL_USERNAME не может быть пустым. Попробуйте снова.
-    goto input_loop
-)
 
 if not exist ".\src\.env" (
     (
     echo BOT_TOKEN=%BOT_TOKEN%
     echo DB_NAME=../data/DataBase/EnLessonsBot.db
     echo VERBS_COUNT=160
-    echo TEXT_PATH=./data/text_data.txt	
+    echo TEXT_PATH=./data/bot_text.txt	
     echo IMAGE_PATH=../data/IrregularVerbCarts/
     echo VERB_ON_PAGE=15
-    echo CHANNEL_USERNAME=%CHANNEL%
+    echo CHANNEL_USERNAMES=%CHANNEL%
+    echo ADMIN_ID=
     ) > ".\src\.env"
     echo Файл .env создан в ".\src\".
 ) else (

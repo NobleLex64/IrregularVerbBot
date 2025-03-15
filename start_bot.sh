@@ -22,12 +22,11 @@ if [ -z "$BOT_TOKEN" ]; then
     exit 1
 fi
 
-echo "Введите значение для CHANNEL_USERNAME:"
+echo "Введите значение для каналов, на которые нужно подписаться;\nНапример:@channel_1,@channel_2,...;\nCHANNEL_USERNAMES:"
 read -r CHANNEL
-if [ -z "$CHANNEL" ]; then
-    echo "CHANNEL_USERNAME не может быть пустым. Попробуйте снова."
-    exit 1
-fi
+
+echo "Введите значение для ADMIN_ID:"
+read -r ADMIN_ID
 
 env_file="src/.env"
 if [ ! -f "$env_file" ]; then
@@ -38,7 +37,8 @@ VERBS_COUNT=160
 TEXT_PATH=./data/bot_text.txt
 IMAGE_PATH=../data/IrregularVerbCarts/
 VERB_ON_PAGE=15
-CHANNEL_USERNAME=$CHANNEL
+CHANNEL_USERNAMES=$CHANNEL
+ADMIN_ID=$ADMIN_ID
 EOL
     echo "Файл .env создан в src/."
 else
@@ -57,7 +57,7 @@ VERB_ON_PAGE=15
 
 VERB_TEXT_COLOR=0xDC140C
 VERB_TRANSLATION_COLOR=0x228B22
-FONT=arial.ttf
+FONT=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
 
 CARTS_WIDTH=800
 CARTS_HEIGHT=450

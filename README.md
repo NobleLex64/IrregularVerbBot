@@ -18,9 +18,29 @@ How install and run:
 IF YOU STARTED ./start_bot.bat AT LEAST ONCE, you can just run IrregularVerbBot\src\start.bat
 ALSO FOR STOP BOT ENTER >> Ctr+C in cmd where .bat
 
+Linux:
+
+How install and run:
+	
+	// >> - is your console input
+
+	>> git clone https://github.com/NobleLex64/IrregularVerbBot.git
+	>> cd IrregularVerbBot/
+	>> chmod +x start_bot.sh
+	>> ./start_bot.sh
+	>> BOT_TOKEN: 
+	>> Here your tg bot token
+	>> N/Y	
+	>> Y
+	>> Y
+
+IF YOU STARTED ./start_bot.sh AT LEAST ONCE, you can just run IrregularVerbBot\src\start.sh
+ALSO FOR STOP BOT ENTER >> Ctr+C in cmd where .sh
+
 Background picture:
 	if you need other image you can put in folder: IrregularVerbBot\src\data\BackgroundImage\
 	the first file in this folder will be installed
+	if you don't need background image clear IrregularVerbBot\src\data\BackgroundImage\ folder.	
 
 ./src/src/.env - configurate file you can modificate this param
 

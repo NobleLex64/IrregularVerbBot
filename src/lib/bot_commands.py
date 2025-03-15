@@ -1,6 +1,6 @@
 import aiosqlite
 
-from globals                     import DB_NAME, IMAGE_PATH, VERBS_COUNT, VERBS_ON_PAGE, USER_SESSION, TEXT_LIST
+from globals                     import DB_NAME, IMAGE_PATH, VERBS_COUNT, VERBS_ON_PAGE, USER_SESSION, TEXT_LIST, ADMIN_ID,CHANNEL_USERNAMES
 from lib.bot_search_handler      import search_present_simple, search_past_simple, search_past_participle
 from lib.bot_db_updater          import add_user_in_db
 from lib.bot_functions           import find_next_unlearned, is_bit_set
@@ -16,18 +16,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message :
         await update.callback_query.answer()
 
-    if not await check_subscriptions(update, context):
+    if CHANNEL_USERNAMES and CHANNEL_USERNAMES != [""] and not await check_subscriptions(update, context):
         await not_subscriptions(update, context)
         return
 
     text = TEXT_LIST[0]
-
     keyboard = [
         [InlineKeyboardButton(TEXT_LIST[9], callback_data="help_command")],
         [InlineKeyboardButton(TEXT_LIST[10], callback_data="irregular_verbs")],
         [InlineKeyboardButton(TEXT_LIST[11], callback_data="table")],
         [InlineKeyboardButton(TEXT_LIST[12], callback_data="progress")],
     ]
+    if ADMIN_ID and update.effective_user.id == int(ADMIN_ID):
+        keyboard.append([InlineKeyboardButton("check students progress", callback_data="stud_progress")])
+
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     if update.message:
@@ -235,3 +237,20 @@ async def echo(update: Update, context: CallbackContext):
                 return
 
     await update.message.reply_text(f"Глагол {verb} не найден в базе данных.")
+
+async def students_progress(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    result = {}
+    async with aiosqlite.connect(DB_NAME) as conn:
+        cursor   = await conn.execute("SELECT username, progress FROM users")
+        rows     = await cursor.fetchall()
+
+        for name, progress in rows:
+            count = sum(1 for i in range(len(progress) * 8) if is_bit_set(progress, i))
+            result[name] = count
+
+    text = ''
+
+    for name, count in result.items():
+        text += f"{name}: {count}\n"
+
+    await update.callback_query.message.reply_text(text)

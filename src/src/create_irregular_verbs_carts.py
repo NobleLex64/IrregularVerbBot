@@ -62,7 +62,7 @@ def delete_cards():
             os.remove(file_path)
 
 # Функция для создания карточек
-def create_cards(file):
+def create_cards(files):
     background_color = (CB_R, CB_G, CB_B, C_ALPHA_CANAL)
     text_color = (T_R, T_G, T_B)
     last_word_color = (LW_R, LW_G, LW_B)
@@ -70,15 +70,18 @@ def create_cards(file):
     if not os.path.exists(PATH_TO_CRD):
         os.makedirs(PATH_TO_CRD)
 
-    try:
-        background = Image.open(os.path.join(PATH_TO_IMG, file)).convert("RGBA")
-    except IOError:
-        raise ValueError(f"Фоновое изображение не найдено по пути {PATH_TO_IMG}")
+    use_background = bool(files)  # Проверяем, есть ли файлы для фона
+    if use_background:
+        try:
+            first_file = files[0]  # Берем первый файл
+            background = Image.open(os.path.join(PATH_TO_IMG, first_file)).convert("RGBA")
+        except IOError:
+            raise ValueError(f"Фоновое изображение не найдено по пути {PATH_TO_IMG}")
 
-    verbs = get_array_irregular_verbs()
+    verbs = get_array_irregular_verbs()  # Загружаем глаголы
 
     for verb in verbs:
-        img  = Image.new("RGBA", (CARTS_WIDTH, CARTS_HEIGHT), background_color)
+        img = Image.new("RGBA" if use_background else "RGB", (800, 450), background_color)
         draw = ImageDraw.Draw(img)
 
         try:
@@ -87,24 +90,23 @@ def create_cards(file):
             font = ImageFont.load_default()
 
         padding = 25
-        x_start = CARTS_WIDTH // 2
+        x_start = 800 // 2
         y_start = 0
-        offset_y = (CARTS_HEIGHT - 50) // 4
+        offset_y = (450 - 50) // 4
 
         indx = verb[0]
         for i in range(1, len(verb)):
             text = verb[i].capitalize()
-            y_line = (y_start + ((i - 1) * offset_y)) + padding
+            y_line = y_start + ((i - 1) * offset_y) + padding
             x_line = x_start - (len(verb[i]) // 2) * 18
-            if i == (len(verb) - 1):
-                draw.text((x_line, y_line), text, font=font, fill=last_word_color)
-            else:
-                draw.text((x_line, y_line), text, font=font, fill=text_color)
+            draw.text((x_line, y_line), text, font=font, fill=last_word_color if i == (len(verb) - 1) else text_color)
 
-        # Сохранение изображения
-        combined = Image.alpha_composite(background, img)
         file_path = os.path.join(PATH_TO_CRD, f"{indx}.png")
-        combined.save(file_path, "PNG")
+
+        if use_background:
+            img = Image.alpha_composite(background, img)
+
+        img.save(file_path)
 
 def create_irregular_verbs_table():
     background_color  = (TB_R, TB_G, TB_B, T_ALPHA_CANAL)
@@ -177,21 +179,23 @@ def main():
     print("Начало работы: 'create_irregular_verbs_cards.py'\n\n")
 
     ans = input("Вам нужно удалить существующие карточки? (Y/N): ")
-    if ans == "Y" or ans == "y":
+    if ans.lower() == "y":
         delete_cards()
         print("Карточки с неправильными глаголами были удаленны!\n\n")
+    #
 
-    files = os.listdir(PATH_TO_IMG)
-    if not files:
-        raise ValueError(f"В папке {PATH_TO_IMG} не найдено изображений для фона.")
+    if os.path.exists(PATH_TO_IMG):
+        files = os.listdir(PATH_TO_IMG)
+    else:
+        files = []
 
     ans = input("Вам нужно создавать карточки? (Y/N): ")
-    if ans == "Y" or ans == "y":
-        create_cards(files[0])
-        print("Карточки с неправильными глаголами были созданны!\n\n")
+    if ans.lower() == "y":
+        create_cards(files)
+        print("Карточки с неправильными глаголами были созданы!\n")
 
     ans = input("Вам нужно создавать таблицу? (Y/N): ")
-    if ans == "Y" or ans == "y":
+    if ans.lower() == "y":
         create_irregular_verbs_table()
         print("Таблица с неправильными глаголами была создана!\n\n")
 
